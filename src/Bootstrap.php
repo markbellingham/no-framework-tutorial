@@ -21,31 +21,9 @@ if($environment !== 'production') {
 }
 $whoops->register();
 
-//throw new \Exception;
-
-$request = new \Http\HttpRequest($_GET, $_POST, $_COOKIE, $_FILES, $_SERVER);
-$response = new \Http\HttpResponse;
-
-//$content = '<h1>Hello World!</h1>';
-//$response->setContent($content);
-//$response->setContent('404 - Page not found');
-//$response->setStatusCode(404);
-
-$routeDefinitionCallback = function (\FastRoute\RouteCollector $r) {
-    $routes = include 'Routes.php';
-    foreach($routes as $route) {
-        $r->addRoute($route[0], $route[1], $route[2]);
-    }
-};
-
-//$dispatcher = \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $r) {
-//    $r->addRoute('GET', '/hello-world', function () {
-//        echo 'Hello World';
-//    });
-//    $r->addRoute('GET', '/another-route', function () {
-//        echo 'This works too';
-//    });
-//});
+$injector = include('Dependencies.php');
+$request = $injector->make('Http\HttpRequest');
+$response = $injector->make('Http\HttpResponse');
 
 $routeDefinitionCallback = function (\FastRoute\RouteCollector $r) {
     $routes = include('Routes.php');
@@ -70,9 +48,8 @@ switch ($routeInfo[0]) {
         $method = $routeInfo[1][1];
         $vars = $routeInfo[2];
 
-        $class = new $className($response);
+        $class = $injector->make($className);
         $class->$method($vars);
-//        call_user_func($handler, $vars);
         break;
 }
 
