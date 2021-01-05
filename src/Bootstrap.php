@@ -38,12 +38,27 @@ $routeDefinitionCallback = function (\FastRoute\RouteCollector $r) {
     }
 };
 
+//$dispatcher = \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $r) {
+//    $r->addRoute('GET', '/hello-world', function () {
+//        echo 'Hello World';
+//    });
+//    $r->addRoute('GET', '/another-route', function () {
+//        echo 'This works too';
+//    });
+//});
+
+$routeDefinitionCallback = function (\FastRoute\RouteCollector $r) {
+    $routes = include('Routes.php');
+    foreach ($routes as $route) {
+        $r->addRoute($route[0], $route[1], $route[2]);
+    }
+};
 $dispatcher = \FastRoute\simpleDispatcher($routeDefinitionCallback);
 
-$routeInfo = $dispatcher->dispatch($request->getMethod(), $request->getPatch());
+$routeInfo = $dispatcher->dispatch($request->getMethod(), $request->getPath());
 switch ($routeInfo[0]) {
     case \FastRoute\Dispatcher::NOT_FOUND:
-        $response->setContent('404 - Not found');
+        $response->setContent('404 - Page not found');
         $response->setStatusCode(404);
         break;
     case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
@@ -51,9 +66,13 @@ switch ($routeInfo[0]) {
         $response->setStatusCode(405);
         break;
     case \FastRoute\Dispatcher::FOUND:
-        $handler = $routeInfo[1];
+        $className = $routeInfo[1][0];
+        $method = $routeInfo[1][1];
         $vars = $routeInfo[2];
-        call_user_func($handler, $vars);
+
+        $class = new $className;
+        $class->$method($vars);
+//        call_user_func($handler, $vars);
         break;
 }
 
