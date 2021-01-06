@@ -2,7 +2,7 @@
 
 namespace PatrickLouys\Page;
 
-use InvalidArgumentException;
+use PatrickLouys\Page\InvalidPageException;
 
 class FilePageReader implements PageReader
 {
